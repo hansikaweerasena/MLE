@@ -104,7 +104,6 @@ def resample_data(train_x, train_y, resample_type='UP', target='Diabetes_012', v
     return train_x, train_y
     
 
-
 def upsample(train_df, verbose=False, random_state=42):
     # # #1: Upsampling (Over-sampling)
     # Separate majority and minority classes
