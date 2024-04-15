@@ -17,7 +17,6 @@ from sklearn.model_selection import train_test_split
 
 from sklearn.utils import resample
 from sklearn.utils import class_weight
-from imblearn.over_sampling import SMOTE
 
 
 from matplotlib import pyplot as plt
@@ -40,7 +39,7 @@ def set_seed(seed=42):
     print(f'Seed set to {seed}')
 
 
-def split_and_scale_data(data_df,  scaler='MinMax', oneHotEncode=False, random_state=42, target='Diabetes_012', test_val_prop=0.1, val_prop=0.5):
+def split_and_scale_data(data_df,  scaler='MinMax', oneHotEncode=False, random_state=42, target='Diabetes_012', test_val_prop=0.1, val_prop=0.5, verbose=True):
    
     # Split the data into features and labels
     x_all = data_df.drop('Diabetes_012', axis=1)
@@ -53,6 +52,10 @@ def split_and_scale_data(data_df,  scaler='MinMax', oneHotEncode=False, random_s
     # Split the data into training, validation, and test sets
     train_x, temp_x, train_y, temp_y = train_test_split(x_all, y_all, test_size=test_val_prop, random_state=random_state)
     val_x, test_x, val_y, test_y = train_test_split(temp_x, temp_y, test_size=val_prop, random_state=random_state)
+
+    if verbose: 
+        print('Shape : train x: {} y: {}, val x: {} y: {}, test shape: {} y: {}'.format(train_x.shape, train_y.shape,
+                                                                                      val_x.shape, val_y.shape, test_x.shape, test_y.shape))
 
     if scaler == 'MinMax':
         scaler = MinMaxScaler()
@@ -162,7 +165,7 @@ def downsample(train_df, verbose=False, random_state=42):
 
 
 def smote(train_x, train_y, verbose=False, random_state=42):
-
+    from imblearn.over_sampling import SMOTE
     # # #3: Apply SMOTE: generates synthetic samples for the minority class to balance the class distribution
     smote = SMOTE(random_state=random_state)
     X_smote, y_smote = smote.fit_resample(train_x, train_y)
