@@ -43,6 +43,8 @@ def split_and_scale_data(data_df,  scaler='MinMax', oneHotEncode=False, random_s
    
     # Split the data into features and labels
     x_all = data_df.drop('Diabetes_012', axis=1)
+
+    feature_columns = x_all.columns
     y_all = data_df['Diabetes_012']
 
     if oneHotEncode:
@@ -68,14 +70,23 @@ def split_and_scale_data(data_df,  scaler='MinMax', oneHotEncode=False, random_s
     val_x = scaler.transform(val_x)
     test_x = scaler.transform(test_x)
 
-    return train_x, train_y, val_x, val_y, test_x, test_y
+    return train_x, train_y, val_x, val_y, test_x, test_y, feature_columns
 
 
-def resample_data(train_x, train_y, resample_type='UP', target='Diabetes_012', verbose=False):
-    train_df = pd.DataFrame(train_x, columns=[target])
+def resample_data(train_x, train_y, feature_columns, resample_type='UP', target='Diabetes_012', verbose=False):
+
+    train_df = pd.DataFrame(train_x, columns=feature_columns)
+
+    is_one_hot_encoded = False
+
+    if train_y.shape[1] > 1:
+        is_one_hot_encoded = True
+        train_y = np.argmax(train_y, axis=1)
+
     train_df[target] = train_y
 
     if verbose:
+        train_df.head()
         sns.countplot(x='Diabetes_012', data=train_df)
         plt.xlabel('No Diabetes, pre-diabetes, or diabetes')
         plt.ylabel('Count')
@@ -101,6 +112,10 @@ def resample_data(train_x, train_y, resample_type='UP', target='Diabetes_012', v
         train_x = train_df.drop(target, axis=1).values
         train_y = train_df[target]
     
+    if is_one_hot_encoded:
+        num_classes = 3
+        train_y = keras.utils.to_categorical(train_y, num_classes)
+
     return train_x, train_y
     
 
@@ -110,6 +125,9 @@ def upsample(train_df, verbose=False, random_state=42):
     majority_class = train_df[train_df['Diabetes_012'] == 0]
     minority_class1 = train_df[train_df['Diabetes_012'] == 1]
     minority_class2 = train_df[train_df['Diabetes_012'] == 2]
+
+    if verbose:
+        print(f'Original class distribution: {len(majority_class)} {len(minority_class1)} {len(minority_class2)}')
 
     # Upsample minority class
     minority_upsampled1 = resample(minority_class1, 
@@ -140,6 +158,9 @@ def downsample(train_df, verbose=False, random_state=42):
     minority_class1 = train_df[train_df['Diabetes_012'] == 1]
     minority_class2 = train_df[train_df['Diabetes_012'] == 2]
 
+    if verbose:
+         print(f'Original class distribution: {len(majority_class)} {len(minority_class1)} {len(minority_class2)}')
+
     # Downsample majority class
     majority_downsampled1 = resample(majority_class, 
                                     replace=False,    # sample without replacement
@@ -166,6 +187,10 @@ def downsample(train_df, verbose=False, random_state=42):
 def smote(train_x, train_y, verbose=False, random_state=42):
     from imblearn.over_sampling import SMOTE
     # # #3: Apply SMOTE: generates synthetic samples for the minority class to balance the class distribution
+
+    if verbose:
+         print(f'Original class distribution: {len(majority_class)} {len(minority_class1)} {len(minority_class2)}')
+
     smote = SMOTE(random_state=random_state)
     X_smote, y_smote = smote.fit_resample(train_x, train_y)
 
