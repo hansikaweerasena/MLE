@@ -39,6 +39,21 @@ def set_seed(seed=42):
     print(f'Seed set to {seed}')
 
 
+def plot_multiclass_roc_curve(y, prob_pred_y, classes, title, file_name='ROC_Curve_NN_UP.jpg'):
+    plt.figure(figsize=(8, 6))
+    for i in range(len(classes)):
+        fpr, tpr, _ = roc_curve(y == i, prob_pred_y[:, i])
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, label=f'Class {classes[i]} (AUC = {roc_auc:.2f})')
+    plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(file_name, dpi=400)
+    plt.show()
+
+
 def split_and_scale_data(data_df,  scaler='MinMax', oneHotEncode=False, random_state=42, target='Diabetes_012', test_val_prop=0.1, val_prop=0.5, verbose=True):
    
     # Split the data into features and labels
