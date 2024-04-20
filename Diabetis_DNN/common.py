@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 
 from sklearn.utils import resample
 from sklearn.utils import class_weight
+from sklearn.metrics import roc_curve, auc
 
 
 from matplotlib import pyplot as plt
@@ -203,14 +204,7 @@ def smote(train_x, train_y, verbose=False, random_state=42):
     from imblearn.over_sampling import SMOTE
     # # #3: Apply SMOTE: generates synthetic samples for the minority class to balance the class distribution
 
-    if verbose:
-         print(f'Original class distribution: {len(majority_class)} {len(minority_class1)} {len(minority_class2)}')
-
     smote = SMOTE(random_state=random_state)
     X_smote, y_smote = smote.fit_resample(train_x, train_y)
-
-    if verbose:
-        target_distribution = y_smote.value_counts()
-        print(target_distribution)
 
     return X_smote, y_smote
